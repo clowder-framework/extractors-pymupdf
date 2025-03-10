@@ -1,0 +1,8 @@
+# output folder
+/data
+# output files
+*.csv
+*.pdf
+*.json
+!extractor_info.json
+!requirements.txt

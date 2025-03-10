@@ -1,0 +1,23 @@
+{
+    "@context": "http://clowder.ncsa.illinois.edu/contexts/extractors.jsonld",
+    "name": "pymupdf-extractor",
+    "version": "0.1.0",
+    "description": "Python PDF extractor using pymupdf",
+    "author": "Mathew, Minu <minum@illinois.edu>; Vorland, Colby J <cvorland@iu.edu>",
+    "contributors": [],
+    "contexts": [{}],
+    "repository": [
+      {
+        "repType": "git",
+        "repUrl": "https://github.com/clowder-framework/extractors-pymupdf"
+      }
+    ],
+    "process": {
+      "file": [
+        "manual-submission"
+      ]
+    },
+    "external_services": [],
+    "dependencies": [],
+    "bibtex": []
+}
