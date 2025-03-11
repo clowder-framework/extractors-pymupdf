@@ -103,7 +103,7 @@ class PyMuPDFExtractor(Extractor):
             start_time = time.time()
             doc = fitz.open(input_file)
             # Create a new document for the annotated PDF.
-            new_doc = fitz.open()
+            # new_doc = fitz.open()
             # This dictionary will hold the sentences extracted per page.
             sentences_output = {"pages": []}
             all_sentences = []
@@ -111,8 +111,8 @@ class PyMuPDFExtractor(Extractor):
             for page_number in range(len(doc)):
                 page = doc.load_page(page_number)
                 # Create a new page in the new document with the same dimensions.
-                new_page = new_doc.new_page(width=page.rect.width, height=page.rect.height)
-                new_page.show_pdf_page(new_page.rect, doc, page_number)  # Copy original content.
+                # new_page = new_doc.new_page(width=page.rect.width, height=page.rect.height)
+                # new_page.show_pdf_page(new_page.rect, doc, page_number)  # Copy original content.
 
                 # Use PyMuPDF's text extraction; use OCR if needed.
                 # if not page.get_text():
@@ -148,8 +148,8 @@ class PyMuPDFExtractor(Extractor):
                 #         print(f"Table found in {pdf_file}, page {page_number}: {table_bbox}")
                 # Save the annotated PDF in the output folder.
             
-            new_doc.save(output_pdf_file, garbage=4, deflate=True, clean=True)
-            new_doc.close()
+            # new_doc.save(output_pdf_file, garbage=4, deflate=True, clean=True)
+            # new_doc.close()
             doc.close()
 
             # Save the JSON file containing only the extracted sentences.
@@ -158,6 +158,7 @@ class PyMuPDFExtractor(Extractor):
 
              # convert sentences to csv
             sentences_df = pd.DataFrame(all_sentences, columns=['file', 'section', 'sentence', 'coordinates'])
+            sentences_df = sentences_df.astype(str)
             sentences_df.to_csv(output_csv_file, index=False)
 
             end_time = time.time()
@@ -165,28 +166,24 @@ class PyMuPDFExtractor(Extractor):
             total_processing_time += processing_time
             log.info(f"Processed {input_file} in {processing_time:.2f} seconds.")
             
-
-            log.info("Output Pdf file generated : %s", output_pdf_filename)
             log.info("Output Json file generated : %s", output_json_file)
             connector.message_process(resource, "PyMuPDF extraction completed.")
 
             # clean existing duplicate
             files_in_dataset = pyclowder.datasets.get_file_list(connector, host, secret_key, dataset_id)
             for file in files_in_dataset:
-                if file["filename"] == output_pdf_filename or file["filename"] == output_json_filename:
+                if file["filename"] == output_csv_filename or file["filename"] == output_json_filename:
                     url = '%sapi/files/%s?key=%s' % (host, file["id"], secret_key)
                     connector.delete(url, verify=connector.ssl_verify if connector else True)
             connector.message_process(resource, "Check for duplicate files...")
 
             # upload to clowder
             connector.message_process(resource, "Uploading output files to Clowder...")
-            pdf_fileid = pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, output_pdf_filename)
             json_fileid = pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, output_json_filename)
             csv_fileid = pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, output_csv_filename)
             # upload metadata to dataset
             extracted_files = [
                 {"file_id": input_file_id, "filename": input_filename, "description": "Input pdf file"},
-                {"file_id": pdf_fileid, "filename": output_pdf_filename, "description": "PyMuPDF PDF output file"},
                 {"file_id": json_fileid, "filename": output_json_filename, "description": "PyMuPDF JSON output file"},
                 {"file_id": csv_fileid, "filename": output_csv_filename, "description": "PyMuPDF CSV output file"},
             ]
@@ -208,27 +205,21 @@ if __name__ == "__main__":
     # output_pdf_file = os.path.join(os.path.splitext(os.path.basename(input_file))[0] + "-pymupdf" + ".pdf")
     # output_json_file = os.path.join(os.path.splitext(os.path.basename(input_file))[0] + "-pymupdf" + ".json")
     # output_csv_file = os.path.join(os.path.splitext(os.path.basename(input_file))[0] + "-pymupdf" + ".csv")
-    # extractor = SofficeExtractor()
+
+    # extractor = PyMuPDFExtractor()
     # doc = fitz.open(input_file)
-    # # Create a new document for the annotated PDF.
-    # new_doc = fitz.open()
     # # This dictionary will hold the sentences extracted per page.
     # sentences_output = {"pages": []}
     # all_sentences = []
 
     # for page_number in range(len(doc)):
     #     page = doc.load_page(page_number)
-    #     # Create a new page in the new document with the same dimensions.
-    #     new_page = new_doc.new_page(width=page.rect.width, height=page.rect.height)
-    #     new_page.show_pdf_page(new_page.rect, doc, page_number)  # Copy original content.
     #     # Extract sentences using our SciSpaCy helper.
     #     sentences = extractor.extract_sections(page)
     #     # Save the sentences for this page.
     #     for sentence in sentences:
     #         all_sentences.append({"file": os.path.basename(input_file), "section": "", "sentence": sentence, "coordinates": ""})
     #     sentences_output["pages"].append({"page_number": page_number, "sentences": sentences})
-    # new_doc.save(output_pdf_file, garbage=4, deflate=True, clean=True)
-    # new_doc.close()
     # doc.close() 
     # # Save the JSON file containing only the extracted sentences.
     # with open(output_json_file, "w", encoding="utf-8") as jf:
@@ -236,6 +227,7 @@ if __name__ == "__main__":
 
     # # convert sentences to csv
     # sentences_df = pd.DataFrame(all_sentences, columns=['file', 'section', 'sentence', 'coordinates'])
+    # sentences_df = sentences_df.astype(str)
     # sentences_df.to_csv(output_csv_file, index=False)
 
     extractor = PyMuPDFExtractor()
