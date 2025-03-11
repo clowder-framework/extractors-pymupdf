@@ -84,11 +84,9 @@ class PyMuPDFExtractor(Extractor):
         input_filename = os.path.splitext(os.path.basename(resource["name"]))[0]
         input_file_ext = resource['file_ext']
         if input_file_ext == ".pdf":
-            output_pdf_file = os.path.join(os.path.splitext(os.path.basename(input_file))[0] + "-pymupdf" + ".pdf")
-            output_pdf_filename = os.path.join(input_filename + "-pymupdf" + ".pdf")
-            output_json_file = os.path.join(os.path.splitext(os.path.basename(input_file))[0] + "-pymupdf" + ".json")
+            output_json_file = os.path.join(os.path.splitext(os.path.basename(input_filename))[0] + "-pymupdf" + ".json")
             output_json_filename = os.path.join(input_filename + "-pymupdf" + ".json")
-            output_csv_file = os.path.join(os.path.splitext(os.path.basename(input_file))[0] + "-pymupdf" + ".csv")
+            output_csv_file = os.path.join(os.path.splitext(os.path.basename(input_filename))[0] + "-pymupdf" + ".csv")
             output_csv_filename = os.path.join(input_filename + "-pymupdf" + ".csv")
         else:
             raise ValueError("Input file is not a PDF")
@@ -163,7 +161,7 @@ class PyMuPDFExtractor(Extractor):
 
             end_time = time.time()
             processing_time = end_time - start_time
-            log.info(f"Processed {input_file} in {processing_time:.2f} seconds.")
+            log.info(f"Processed {input_filename} in {processing_time:.2f} seconds.")
             
             log.info("Output Json file generated : %s", output_json_file)
             connector.message_process(resource, "PyMuPDF extraction completed.")
@@ -194,8 +192,8 @@ class PyMuPDFExtractor(Extractor):
             metadata = {"@context": [context], "agent": agent, "content": content}
             pyclowder.datasets.upload_metadata(connector, host, secret_key, dataset_id, metadata)
         except Exception as e:
-            log.error(f"PyMuPDF Extractor Error processing file {input_file} : {e}")
-            connector.message_process(resource, f"PyMuPDF Extractor Error processing file {input_file} : {e}")
+            log.error(f"PyMuPDF Extractor Error processing file {input_filename} : {e}")
+            connector.message_process(resource, f"PyMuPDF Extractor Error processing file {input_filename} : {e}")
 
 
 if __name__ == "__main__":
