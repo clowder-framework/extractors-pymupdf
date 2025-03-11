@@ -163,7 +163,6 @@ class PyMuPDFExtractor(Extractor):
 
             end_time = time.time()
             processing_time = end_time - start_time
-            total_processing_time += processing_time
             log.info(f"Processed {input_file} in {processing_time:.2f} seconds.")
             
             log.info("Output Json file generated : %s", output_json_file)
