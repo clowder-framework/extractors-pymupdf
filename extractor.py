@@ -84,10 +84,8 @@ class PyMuPDFExtractor(Extractor):
         input_filename = os.path.splitext(os.path.basename(resource["name"]))[0]
         input_file_ext = resource['file_ext']
         if input_file_ext == ".pdf":
-            output_json_file = os.path.join(os.path.splitext(os.path.basename(input_filename))[0] + "-pymupdf" + ".json")
-            output_json_filename = os.path.join(input_filename + "-pymupdf" + ".json")
-            output_csv_file = os.path.join(os.path.splitext(os.path.basename(input_filename))[0] + "-pymupdf" + ".csv")
-            output_csv_filename = os.path.join(input_filename + "-pymupdf" + ".csv")
+            output_json_file = os.path.join(input_filename + "-pymupdf" + ".json")
+            output_csv_file = os.path.join(input_filename + "-pymupdf" + ".csv")
         else:
             raise ValueError("Input file is not a PDF")
         # These process messages will appear in the Clowder UI under Extractions.
@@ -164,25 +162,26 @@ class PyMuPDFExtractor(Extractor):
             log.info(f"Processed {input_filename} in {processing_time:.2f} seconds.")
             
             log.info("Output Json file generated : %s", output_json_file)
+            log.info("Output CSV file generated : %s", output_csv_file)
             connector.message_process(resource, "PyMuPDF extraction completed.")
 
             # clean existing duplicate
             files_in_dataset = pyclowder.datasets.get_file_list(connector, host, secret_key, dataset_id)
             for file in files_in_dataset:
-                if file["filename"] == output_csv_filename or file["filename"] == output_json_filename:
+                if file["filename"] == output_csv_file or file["filename"] == output_json_file:
                     url = '%sapi/files/%s?key=%s' % (host, file["id"], secret_key)
                     connector.delete(url, verify=connector.ssl_verify if connector else True)
             connector.message_process(resource, "Check for duplicate files...")
 
             # upload to clowder
             connector.message_process(resource, "Uploading output files to Clowder...")
-            json_fileid = pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, output_json_filename)
-            csv_fileid = pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, output_csv_filename)
+            json_fileid = pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, output_json_file)
+            csv_fileid = pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, output_csv_file)
             # upload metadata to dataset
             extracted_files = [
                 {"file_id": input_file_id, "filename": input_filename, "description": "Input pdf file"},
-                {"file_id": json_fileid, "filename": output_json_filename, "description": "PyMuPDF JSON output file"},
-                {"file_id": csv_fileid, "filename": output_csv_filename, "description": "PyMuPDF CSV output file"},
+                {"file_id": json_fileid, "filename": output_json_file, "description": "PyMuPDF JSON output file"},
+                {"file_id": csv_fileid, "filename": output_csv_file, "description": "PyMuPDF CSV output file"},
             ]
             content = {"extractor": "pymupdf-extractor", "extracted_files": extracted_files}
             context = "http://clowder.ncsa.illinois.edu/contexts/metadata.jsonld"
