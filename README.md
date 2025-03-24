@@ -20,3 +20,4 @@ Extractor takes pdf file as input and outputs json and csv files with textual co
 
 ## Deployment
 - Please refer to Clowder instructions
+- Current deployment `hub.ncsa.illinois.edu/clowder/extractors-pymupdf:0.2.0.0`
